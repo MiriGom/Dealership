@@ -4,16 +4,28 @@ import java.util.List;
 
 //Class and declared private variables
 public class Dealership {
-    private final String name;
-    private final String address;
-    private final String phone;
-    private final ArrayList<Vehicle> inventory = new ArrayList<>();
+    private String name;
+    private String address;
+    private String phone;
+    private ArrayList<Vehicle> inventory = new ArrayList<>();
 
 
     //Main constructor
     Dealership(String name, String address, String phone){
         this.name = name;
         this.address = address;
+        this.phone = phone;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 

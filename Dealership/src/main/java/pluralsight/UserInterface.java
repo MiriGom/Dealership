@@ -1,17 +1,33 @@
 package pluralsight;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 public class UserInterface {
+    private List<Dealership> dealershipList;
+    private SalesContractDAOmySqlmpl salesContractDao;
+    private VehicleDAO vehicleDAO;
     Scanner scan = new Scanner(System.in);
     private Dealership dealership; //class variable to hold the list of Vehicles
+
+    public UserInterface(List<Dealership> dealershipList, DataSource ds) {
+        this.dealershipList = dealershipList;
+        this.vehicleDAO = new VehicleDAOSqlImp(ds);
+        this.salesContractDao = new SalesContractDAOmySqlmpl(ds);
+    }
     public void userInterface(){
-        display();
+
+        displayDealerships();
+
+
+
+
     }
     public void display(){
-        init();// Initializes Dealership
+
         boolean isRunning = true;
         while (isRunning) {
             System.out.print("""
@@ -30,6 +46,7 @@ public class UserInterface {
                     8) ADD VEHICLE
                     9) REMOVE VEHICLE
                     10) SELL/LEASE A VEHICLE
+                    11) SEARCH BY DEALERSHIP
                     99) Exit
                     """);
             //added try catch so that it tells you when you entered an invalid input.
@@ -77,24 +94,18 @@ public class UserInterface {
             }
         }
     }
-    private void init(){
 
-
-            try {
-                dealership = new DealershipFileManager().getDealership();
-            } catch (IOException e) {
-                System.out.println("problem with DealershipFileManager");
-           }
-    }
     public void processGetByPriceRequest() {
+
         System.out.println("Please enter the min price you are looking for");
         double userMinPrice = scan.nextInt();
         scan.nextLine();
         System.out.println("Please enter your max price you are looking for");
         double userMaxPrice = scan.nextInt();
         scan.nextLine();
+        
 
-        for (Vehicle v : dealership.getVehiclesByPrice(userMinPrice, userMaxPrice)) {
+        for (Vehicle v : vehicleDAO.findByPrice(userMinPrice, userMaxPrice)) {
             System.out.println(v);
         }
     }
@@ -104,7 +115,7 @@ public class UserInterface {
         System.out.println("Please enter Model");
         String userModel = scan.nextLine();
 
-        for (Vehicle v : dealership.getVehiclesByMakeModel(userMake, userModel)){
+        for (Vehicle v : vehicleDAO.findMakeModel(userMake, userModel)) {
             System.out.println(v);
         }
     }
@@ -116,7 +127,7 @@ public class UserInterface {
         int userMaxYear = scan.nextInt();
         scan.nextLine();
 
-            for (Vehicle v : dealership.getVehiclesByYear(userMinYear, userMaxYear)){
+            for (Vehicle v : vehicleDAO.findByYear(userMinYear, userMaxYear)){
             System.out.println(v);
         }
 
@@ -125,7 +136,7 @@ public class UserInterface {
         System.out.println("Please enter the color you are searching for?");
         String userColor = scan.nextLine();
 
-            for (Vehicle v : dealership.getVehiclesByColor(userColor)) {
+            for (Vehicle v : vehicleDAO.findByColor(userColor)) {
                 System.out.println(v);
             }
     }
@@ -136,20 +147,20 @@ public class UserInterface {
         System.out.println("Please enter the max mileage");
         int maxMileage  = scan.nextInt();
         scan.nextLine();
-        for (Vehicle v : dealership.getVehiclesByMileage(minMileage, maxMileage)){
+        for (Vehicle v : vehicleDAO.findByMileage(minMileage, maxMileage)){
             System.out.println(v);
         }
     }
     public void processGetByVehicleTypeRequest(){
         System.out.println("Please enter the type of vehicle you are looking for");
         String vehicleType = scan.nextLine();
-        for (Vehicle v : dealership.getVehiclesByType(vehicleType)) {
+        for (Vehicle v : vehicleDAO.findByVehicleType(vehicleType)) {
             System.out.println(v);
         }
     }
     public void processGetAllVehicleRequest(){
 
-            for (Vehicle vehicle : dealership.getAllVehicles()) {
+            for (Vehicle vehicle : vehicleDAO.findAllVehicles()) {
                 System.out.println(vehicle);
             }
     }
@@ -211,7 +222,7 @@ public class UserInterface {
         String custEmail = scan.nextLine();
         System.out.println("Please enter the vin of car to purchase or lease");
         int userCarVin = scan.nextInt();
-        Vehicle vehicleSold = dealership.getVehicleByVin(userCarVin);
+        Vehicle vehicleSold = vehicleDAO.findByVin(userCarVin).get(0);
        // while (vehicleSold != null){
            // scan.nextInt();
       //  }
@@ -219,16 +230,15 @@ public class UserInterface {
         System.out.println("Does the customer want to buy or lease?");
         String custInput = scan.nextLine();
         Contract contract = null;
-        dealership.removeVehicle(vehicleSold);
 
         if (custInput.equalsIgnoreCase("buy")) {
                 boolean custFinance = getSalesContract();
                         contract = new SalesContract(custName, custEmail, vehicleSold, custFinance);
-
+                        salesContractDao.saveContract((SalesContract) contract);
             } if (custInput.equalsIgnoreCase("lease")){
                 contract = new LeaseContract(custName, custEmail, vehicleSold );
             }
-        new ContractDAOcsvImpl().saveContract(contract);
+       // new ContractDAOcsvImpl().saveContract(contract);
 
     }
 
@@ -241,6 +251,19 @@ public class UserInterface {
         }
         return false;
     }
+    public void displayDealerships() {
+
+       for (int i = 0; i < dealershipList.size(); i++) {
+           Dealership dealership = dealershipList.get(i);
+           System.out.printf( (i + 1) + ") Dealership: %s address: %s\n", dealership.getName(), dealership.getAddress());
+
+       }
+        System.out.println("Select your Dealership");
+        String userChoice = scan.nextLine();
+        System.out.println("You chose Tampa");
+        display();
+    }
+
 
 
 }
