@@ -1,4 +1,3 @@
-
 package pluralsight;
 
 import javax.sql.DataSource;
@@ -6,19 +5,19 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SalesContractDAOmySqlmpl implements SalesContractDAO{
+public class LeaseContractDAOmySqlImp implements LeaseContractDAO{
     private DataSource ds;
-    public SalesContractDAOmySqlmpl (DataSource ds) {
+    public LeaseContractDAOmySqlImp (DataSource ds) {
         this.ds = ds;
     }
-    @Override
-    public void saveContract(SalesContract contract) {
-        List<Contract> contractsList = new ArrayList<>();
-        try(Connection connection = ds.getConnection()) {
 
+    @Override
+    public void saveLeaseContract(LeaseContract contract) {
+        List<Contract> leaseContractList = new ArrayList<>();
+        try(Connection connection = ds.getConnection()) {
             PreparedStatement ps = connection.prepareStatement("""
-             INSERT INTO sales_contracts(date, vin, customer_name, customer_email, monthly_payment, total_price, sales_tax, recording_fee, processing_fee, financing )
-             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+             INSERT INTO lease_contracts(date, vin, customer_name, customer_email, monthly_payment, total_price, expected_ending_value, lease_fee, monthly_lease_finance)
+             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
              """);
             ps.setString(1, contract.dateOfContract);
             ps.setInt(2, contract.vehicleSold.getVin());
@@ -26,14 +25,12 @@ public class SalesContractDAOmySqlmpl implements SalesContractDAO{
             ps.setString(4, contract.customerEmail);
             ps.setDouble(5, contract.monthlyPayment);
             ps.setDouble(6, contract.totalPrice);
-            ps.setDouble(7, contract.getSalesTax());
-            ps.setDouble(8, contract.getRecordingFee());
-            ps.setDouble(9, contract.getProcessingFee());
-            ps.setBoolean(10,contract.isFinancing());
+            ps.setDouble(7, contract.getExpectedEndingValue());
+            ps.setDouble(8, contract.getLeaseFee());
+            ps.setDouble(9, contract.getMonthlyLeaseFinance());
             ps.executeUpdate();
-
         }catch (SQLException e) {
             throw new RuntimeException(e);
-        };
+        }
     }
 }

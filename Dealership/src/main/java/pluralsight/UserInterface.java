@@ -1,14 +1,14 @@
 package pluralsight;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class UserInterface {
     private List<Dealership> dealershipList;
-    private SalesContractDAOmySqlmpl salesContractDao;
+    private SalesContractDAOmySqlImp salesContractDao;
+    private LeaseContractDAOmySqlImp leaseContractDao;
     private VehicleDAO vehicleDAO;
     Scanner scan = new Scanner(System.in);
     private Dealership dealership; //class variable to hold the list of Vehicles
@@ -16,7 +16,8 @@ public class UserInterface {
     public UserInterface(List<Dealership> dealershipList, DataSource ds) {
         this.dealershipList = dealershipList;
         this.vehicleDAO = new VehicleDAOSqlImp(ds);
-        this.salesContractDao = new SalesContractDAOmySqlmpl(ds);
+        this.salesContractDao = new SalesContractDAOmySqlImp(ds);
+        this.leaseContractDao = new LeaseContractDAOmySqlImp(ds);
     }
     public void userInterface(){
 
@@ -234,9 +235,10 @@ public class UserInterface {
         if (custInput.equalsIgnoreCase("buy")) {
                 boolean custFinance = getSalesContract();
                         contract = new SalesContract(custName, custEmail, vehicleSold, custFinance);
-                        salesContractDao.saveContract((SalesContract) contract);
+                        salesContractDao.saveSalesContract((SalesContract) contract);
             } if (custInput.equalsIgnoreCase("lease")){
                 contract = new LeaseContract(custName, custEmail, vehicleSold );
+                leaseContractDao.saveLeaseContract((LeaseContract) contract);
             }
        // new ContractDAOcsvImpl().saveContract(contract);
 
